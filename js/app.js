@@ -384,7 +384,7 @@ function updateCheckoutSummary() {
 
 function handlePlaceOrder(e) {
     e.preventDefault();
-    const yourWhatsAppNumber = '923001234567';
+    const yourWhatsAppNumber = '923211217548';
     const cart = getCart();
 
     const customer = {
