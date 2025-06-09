@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Mohid's Store</title>
+    
+    <style>
+        /* --- Google Font & CSS Variables --- */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #007bff; /* Professional Blue */
+            --secondary-color: #6c757d; /* Gray */
+            --success-color: #28a745; /* Green */
+            --danger-color: #dc3545; /* Red */
+            --bg-color: #f8f9fa;
+            --surface-color: #ffffff;
+            --text-color: #212529;
+            --text-muted-color: #6c757d;
+            --border-color: #dee2e6;
+            --border-radius: 8px;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            --transition: all 0.2s ease-in-out;
+        }
+
+        /* --- Base & Reset --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; }
+
+        /* --- Layout & Containers --- */
+        .admin-header { background-color: var(--surface-color); padding: 1rem 2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-bottom: 1px solid var(--border-color); }
+        .admin-header .logo { font-size: 1.5rem; font-weight: 700; color: var(--text-color); text-decoration: none; }
+        .admin-container { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+
+        /* --- Buttons --- */
+        .btn { display: inline-block; padding: 0.75rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; color: #fff; transition: var(--transition); }
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: #0069d9; }
+        .btn-success { background-color: var(--success-color); }
+        .btn-success:hover { background-color: #218838; }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-danger:hover { background-color: #c82333; }
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        /* --- Form Elements --- */
+        .card { background-color: var(--surface-color); padding: 2rem; box-shadow: var(--shadow); border-radius: var(--border-radius); }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        .form-control { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--border-radius); font-size: 1rem; font-family: 'Poppins', sans-serif; transition: border-color 0.2s, box-shadow 0.2s; }
+        .form-control:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); }
+        
+        /* --- Dashboard --- */
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+        .product-list-item { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 1rem; transition: var(--transition); }
+        .product-list-item:hover { border-color: var(--primary-color); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .product-list-item .product-name { font-weight: 600; }
+        .product-list-item .actions { display: flex; gap: 0.5rem; }
+        
+        /* --- Modal --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 1rem; }
+        .modal-content { background: var(--surface-color); padding: 2rem; width: 100%; max-width: 600px; border-radius: var(--border-radius); max-height: 90vh; overflow-y: auto; }
+        
+        /* --- Image & Video Previews --- */
+        .preview-container { margin-top: 1rem; padding: 1rem; background: var(--bg-color); border-radius: 8px; }
+        .image-preview-list, .video-preview-list { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .image-preview, .video-preview { position: relative; }
+        .image-preview img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
+        .video-preview { width: 120px; font-size: 12px; background: #eee; padding: 5px; border-radius: 4px; word-break: break-all; }
+        .delete-btn-icon { position: absolute; top: -5px; right: -5px; background: var(--danger-color); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; line-height: 1; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .product-list-item { flex-direction: column; align-items: flex-start; }
+            .product-list-item .actions { width: 100%; margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <a href="index.html" class="logo">Mohid's Store Admin</a>
+    </header>
+
+    <main class="admin-container">
+        <!-- Login Section -->
+        <section id="login-section" class="card">
+            <h2>Admin Login</h2>
+            <form id="login-form"><div class="form-group"><label for="password">Password</label><input type="password" id="password" class="form-control" required></div><button type="submit" class="btn btn-primary">Login</button></form>
+        </section>
+
+        <!-- Admin Dashboard -->
+        <section id="admin-dashboard" style="display: none;">
+            <div class="dashboard-header"><h2>Product Management</h2><div class="actions"><button id="add-new-product-btn" class="btn btn-success">Add New Product</button><button id="save-data-btn" class="btn btn-danger">Save & Download Data File</button></div></div><div id="product-list"></div>
+        </section>
+    </main>
+
+    <!-- Product Edit/Add Modal -->
+    <div class="modal-overlay" id="edit-form-container">
+        <div class="modal-content">
+            <form id="product-form">
+                <h3 id="form-title" style="margin-bottom: 2rem;">Edit Product</h3>
+                <input type="hidden" id="product-id">
+
+                <div class="form-group"><label for="product-name">Product Name</label><input type="text" id="product-name" class="form-control" required></div>
+                <div class="form-group"><label for="product-desc">Description</label><textarea id="product-desc" rows="4" class="form-control" required></textarea></div>
+                <div class="form-group"><label for="product-price">Original Price</label><input type="number" id="product-price" class="form-control" required></div>
+                <div class="form-group"><label for="product-sale-price">Sale Price (leave empty)</label><input type="number" id="product-sale-price" class="form-control"></div>
+                <div class="form-group"><label for="product-category">Category</label><input type="text" id="product-category" class="form-control" required></div>
+                
+                <div class="form-group"><label>Images</label><div id="image-previews" class="preview-container"><div class="image-preview-list"></div></div></div>
+                <div class="form-group"><label for="image-upload">Upload New Image</label><input type="file" id="image-upload" accept="image/*" class="form-control"><small id="upload-status" style="display:block; margin-top:0.5rem; color: var(--text-muted-color);"></small></div>
+
+                <!-- VIDEO SECTION (NEW) -->
+                <div class="form-group"><label>Video URLs</label><div id="video-previews" class="preview-container"><div class="video-preview-list"></div></div></div>
+                <div class="form-group">
+                    <label for="video-url-input">Add YouTube Embed URL</label>
+                    <div style="display:flex; gap: 10px;">
+                        <input type="text" id="video-url-input" class="form-control" placeholder="e.g., https://www.youtube.com/embed/VIDEO_ID">
+                        <button type="button" id="add-video-btn" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" id="close-form-btn" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
