@@ -496,7 +496,7 @@ function renderProductPage() {
     }
 
     document.title = `${product.name} | Mohid's Store`;
-    const priceHTML = product.salePrice ? `<span class="sale-badge">${formatPrice(product.salePrice)}</span> <span class="original-price">${formatPrice(product.price)}</span>` : `<span>${formatPrice(product.price)}</span>`;
+    const priceHTML = product.salePrice ? `<span class="sale-badge">${formatPrice(product.salePrice)}</span> <span class="original-price"><s>${formatPrice(product.price)}</s></span>` : `<span>${formatPrice(product.price)}</span>`;
     
     const imageThumbnailsHTML = product.images.map((img, index) => `<div class="thumbnail ${index === 0 ? 'active' : ''}" data-image="${img}"><img src="${img}" alt="Thumbnail ${index + 1}"></div>`).join('');
     const videoThumbnailHTML = (product.videoUrls && product.videoUrls.length > 0) ? `<div class="thumbnail video-thumbnail" id="video-thumbnail"><i class='bx bx-play play-icon'></i></div>` : '';
@@ -516,7 +516,7 @@ function renderProductPage() {
                 <p class="description">${product.description}</p>
                 <div class="quantity-control">
                     <label for="quantity">Quantity:</label>
-                    <input type="number" id="quantity" value="1" min="1" max="10" class="form-control">
+                    <input type="number" id="quantity" value="1" min="1" max="50" class="form-control">
                 </div>
                 <button class="btn" id="add-to-cart-btn">Add to Cart</button>
             </div>
