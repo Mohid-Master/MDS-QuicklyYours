@@ -25,10 +25,11 @@ function main() {
         renderHomePage();
     } else if (path.includes('product.html')) {
         renderProductPage();
-    } else if (path.includes('order.html')) {
+    } else if (path.includes('order.html') || path.includes('order')) {
         renderCheckoutPage();
     }
 }
+
 
 // ===================================================================
 // --- LOCALSTORAGE HELPERS (Robust Version) ---
