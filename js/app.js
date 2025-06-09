@@ -181,7 +181,7 @@ function getCart() { return ls.get('cart') || []; }
 function saveCart(cart) {
     ls.set('cart', cart);
     renderCartSidebar();
-    if (window.location.pathname.includes('order.html')) {
+    if (window.location.pathname.includes('order.html') || window.location.pathname.includes('order') ) {
         updateCheckoutSummary();
     }
 }
@@ -496,7 +496,7 @@ function renderProductPage() {
     }
 
     document.title = `${product.name} | Mohid's Store`;
-    const priceHTML = product.salePrice ? `<span class="sale-badge">${formatPrice(product.salePrice)}</span> <span class="original-price"><s>${formatPrice(product.price)}</s></span>` : `<span>${formatPrice(product.price)}</span>`;
+    const priceHTML = product.salePrice ? `<span class="sale-badge">${formatPrice(product.salePrice)}</span> <span class="original-price"><s style="font-size: 70%;">${formatPrice(product.price)}</s></span>` : `<span>${formatPrice(product.price)}</span>`;
     
     const imageThumbnailsHTML = product.images.map((img, index) => `<div class="thumbnail ${index === 0 ? 'active' : ''}" data-image="${img}"><img src="${img}" alt="Thumbnail ${index + 1}"></div>`).join('');
     const videoThumbnailHTML = (product.videoUrls && product.videoUrls.length > 0) ? `<div class="thumbnail video-thumbnail" id="video-thumbnail"><i class='bx bx-play play-icon'></i></div>` : '';
