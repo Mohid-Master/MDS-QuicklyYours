@@ -18,8 +18,14 @@ function main() {
     initCartSidebar(); // Made safe to run on all pages
     initBackToTop(); // Made safe to run on all pages
     
-    // --- Page-Specific Logic (Routing) ---
+        // --- Page-Specific Logic (Routing) ---
     const path = window.location.pathname;
+        // Logic that applies to multiple pages
+    if (!path.includes('order.html')) {
+        initLoginSystem();
+        initCartSidebar();
+        initBackToTop();
+    }
     
     if (path.endsWith('/') || path.endsWith('index.html') || path === '') {
         renderHomePage();
@@ -170,10 +176,17 @@ async function getUserLocationWithCity() {
 // ===================================================================
 // --- CART MANAGEMENT (NOW SAFE) ---
 // ===================================================================
+// --- MODIFIED Cart Management ---
 function initCartSidebar() {
     renderCartSidebar();
     document.getElementById('cart-btn')?.addEventListener('click', () => openModal('cart-sidebar'));
     document.getElementById('close-cart-btn')?.addEventListener('click', () => closeModal('cart-sidebar'));
+    
+    // FIX: Link to order.html in cart sidebar footer
+    const checkoutBtn = document.querySelector('.cart-footer a');
+    if (checkoutBtn) {
+        checkoutBtn.href = 'order.html'; // Ensure it points to the correct file
+    }
 }
 
 function getCart() { return ls.get('cart') || []; }
@@ -277,26 +290,17 @@ function renderCartSidebar() {
 // ===================================================================
 // --- CHECKOUT PAGE LOGIC (UPGRADED) ---
 // ===================================================================
+// --- MODIFIED Checkout Page Logic ---
 function renderCheckoutPage() {
     const user = ls.get('userInfo');
     if (user) {
         document.getElementById('user-name').value = user.name || '';
         document.getElementById('user-phone').value = user.phone || '';
         document.getElementById('user-address').value = user.address || '';
-        const locationInput = document.getElementById('user-location');
-        if (locationInput) {
-            locationInput.value = user.location || '';
-            // If location exists, try to auto-detect city
-            if(user.location) {
-                const coords = user.location.split('?q=')[1];
-                if(coords) {
-                    const [latitude, longitude] = coords.split(',');
-                    autoSelectCityFromCoords(latitude, longitude);
-                }
-            }
-        }
+        document.getElementById('user-location').value = user.location || '';
     }
 
+    // Attach event listeners
     document.getElementById('city-select')?.addEventListener('change', updateCheckoutSummary);
     document.querySelectorAll('.payment-option').forEach(opt => {
         opt.addEventListener('click', () => {
@@ -307,7 +311,31 @@ function renderCheckoutPage() {
     });
     
     document.getElementById('checkout-form')?.addEventListener('submit', handlePlaceOrder);
-    updateCheckoutSummary();
+    
+    // FIX: Attach listener for the new GPS button
+    document.getElementById('get-location-btn')?.addEventListener('click', () => {
+        const locationInput = document.getElementById('user-location');
+        const locationBtn = document.getElementById('get-location-btn');
+        if (navigator.geolocation) {
+            locationBtn.textContent = "Wait...";
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    locationInput.value = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                    locationBtn.textContent = "Got it!";
+                    locationBtn.style.backgroundColor = 'var(--success-color)';
+                },
+                () => {
+                    alert('Could not get location. Please enable location services and try again.');
+                    locationBtn.textContent = "Get";
+                }
+            );
+        } else {
+            alert('Geolocation is not supported by your browser.');
+        }
+    });
+
+    updateCheckoutSummary(); // Initial render of summary
 }
 
 async function autoSelectCityFromCoords(latitude, longitude) {
