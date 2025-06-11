@@ -13,6 +13,17 @@ const productsData = [
     ],
     "videoUrls": [
       "https://youtube.com/embed/dNR8URt8Ck0?feature=share"
+    ],
+    "variants": [
+      {
+        "name": "size",
+        "options": [
+          "small",
+          "large",
+          "xl",
+          "xxl"
+        ]
+      }
     ]
   },
   {
@@ -42,6 +53,52 @@ const productsData = [
     ],
     "videoUrls": [
       "https://youtube.com/embed/r8Gd1j3Z444?si=dUps6oo03qY5jnIX"
+    ],
+    "variants": []
+  },
+  {
+    "id": "prod_1749615667301",
+    "name": "STERIO EARPHONES ",
+    "description": "M04 Wireless Earbuds | M04 pods | M04 Earbuds | Crystal Clear Sound, Bluetooth 5.3, Transparent Case, Heavy Bass Stereo, Noise Reduction, Sports Headset with Microphone, Waterproof, LED Display",
+    "price": 2000,
+    "salePrice": 1500,
+    "category": "headphones",
+    "images": [
+      "https://res.cloudinary.com/dsiktr6hj/image/upload/v1749615610/l26quedh7wa4gghuedk4.jpg"
+    ],
+    "videoUrls": [],
+    "variants": [
+      {
+        "name": "color",
+        "options": [
+          "White",
+          "Black with red",
+          "Black with yellow",
+          "Blue"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "prod_1749617986957",
+    "name": "ROLEX DAYTONA",
+    "description": "FOR MEN'S \nDate working \nRubber belt\nMASTER lock\nWith Box 🎁",
+    "price": 4000,
+    "salePrice": 3500,
+    "category": "Watch",
+    "images": [
+      "https://res.cloudinary.com/dsiktr6hj/image/upload/v1749617938/sxh4n6ox985xcxvzkmia.jpg",
+      "https://res.cloudinary.com/dsiktr6hj/image/upload/v1749617953/okrtdybzhhw7cyc4c9iq.jpg"
+    ],
+    "videoUrls": [],
+    "variants": [
+      {
+        "name": "Dial color",
+        "options": [
+          "green",
+          "gray"
+        ]
+      }
     ]
   }
 ];
