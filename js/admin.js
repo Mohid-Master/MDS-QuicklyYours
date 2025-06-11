@@ -1,10 +1,10 @@
-// js/admin.js
+// js/admin.js (Complete, Corrected, and Final Version)
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURATION ---
     const ADMIN_PASSWORD = "1"; // CHANGE THIS to a strong password
-    const CLOUDINARY_CLOUD_NAME = "dsiktr6hj"; // CHANGE THIS to your Cloudinary cloud name
-    const CLOUDINARY_UPLOAD_PRESET = "mohid_store_unsigned"; // CHANGE THIS to your unsigned upload preset name
+    const CLOUDINARY_CLOUD_NAME = "dsiktr6hj"; // Your Cloudinary cloud name
+    const CLOUDINARY_UPLOAD_PRESET = "mohid_store_unsigned"; // Your unsigned upload preset
 
     // --- DOM ELEMENTS ---
     const loginSection = document.getElementById('login-section');
@@ -17,24 +17,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const addNewProductBtn = document.getElementById('add-new-product-btn');
     const saveDataBtn = document.getElementById('save-data-btn');
     const addVideoBtn = document.getElementById('add-video-btn');
+    const addVariantBtn = document.getElementById('add-variant-btn');
 
     // --- STATE ---
-    let productsDataStore = JSON.parse(JSON.stringify(productsData)); 
+    // Create a deep copy to avoid modifying the original data until we're ready to save
+    let productsDataStore = JSON.parse(JSON.stringify(productsData));
 
     // --- EVENT LISTENERS ---
-    loginForm.addEventListener('submit', handleLogin);
-    addNewProductBtn.addEventListener('click', () => showForm());
-    closeFormBtn.addEventListener('click', hideForm);
-    productForm.addEventListener('submit', handleFormSubmit);
-    saveDataBtn.addEventListener('click', saveAndDownloadData);
-    document.getElementById('image-upload').addEventListener('change', handleImageUpload);
-    addVideoBtn.addEventListener('click', handleAddVideo);
+    loginForm?.addEventListener('submit', handleLogin);
+    addNewProductBtn?.addEventListener('click', () => showForm());
+    closeFormBtn?.addEventListener('click', hideForm);
+    productForm?.addEventListener('submit', handleFormSubmit);
+    saveDataBtn?.addEventListener('click', saveAndDownloadData);
+    document.getElementById('image-upload')?.addEventListener('change', handleImageUpload);
+    addVideoBtn?.addEventListener('click', handleAddVideo);
+    addVariantBtn?.addEventListener('click', handleAddVariantType);
 
     // --- FUNCTIONS ---
-    function handleLogin(e) { /* ... same as before ... */
+    function handleLogin(e) {
         e.preventDefault();
-        const password = document.getElementById('password').value;
-        if (password === ADMIN_PASSWORD) {
+        if (document.getElementById('password').value === ADMIN_PASSWORD) {
             loginSection.style.display = 'none';
             dashboardSection.style.display = 'block';
             renderProductList();
@@ -43,7 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderProductList() { /* ... same as before ... */
+    function renderProductList() {
+        if (!productListContainer) return;
         productListContainer.innerHTML = '';
         productsDataStore.forEach(product => {
             const item = document.createElement('div');
@@ -60,43 +63,57 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('product-id').value = productId || '';
         document.getElementById('upload-status').textContent = '';
         
-        const formTitle = document.getElementById('form-title');
-        
         if (productId) {
-            formTitle.textContent = 'Edit Product';
+            document.getElementById('form-title').textContent = 'Edit Product';
             const product = productsDataStore.find(p => p.id === productId);
+            if (!product) { console.error("Product not found!"); return; }
             document.getElementById('product-name').value = product.name;
             document.getElementById('product-desc').value = product.description;
             document.getElementById('product-price').value = product.price;
             document.getElementById('product-sale-price').value = product.salePrice || '';
             document.getElementById('product-category').value = product.category;
-            renderImagePreviews(product.images);
-            // NEW: Render video previews
+            renderImagePreviews(product.images || []);
             renderVideoPreviews(product.videoUrls || []);
+            renderVariantInputs(product.variants || []);
         } else {
-            formTitle.textContent = 'Add New Product';
+            document.getElementById('form-title').textContent = 'Add New Product';
             renderImagePreviews([]);
             renderVideoPreviews([]);
+            renderVariantInputs([]);
         }
         formContainer.style.display = 'flex';
     }
 
-    function hideForm() { formContainer.style.display = 'none'; }
-    
-    function renderImagePreviews(images) { /* ... same as before ... */
+    function hideForm() {
+        formContainer.style.display = 'none';
+    }
+
+    function renderImagePreviews(images) {
         const container = document.querySelector('#image-previews .image-preview-list');
+        if (!container) return;
         container.innerHTML = images.map(imgUrl => `<div class="image-preview"><img src="${imgUrl}" alt="Preview"><button type="button" class="delete-btn-icon" data-url="${imgUrl}">×</button></div>`).join('');
         document.querySelectorAll('.image-preview .delete-btn-icon').forEach(btn => btn.addEventListener('click', (e) => e.target.parentElement.remove()));
     }
 
-    // NEW: Function to render video previews
     function renderVideoPreviews(videoUrls) {
         const container = document.querySelector('#video-previews .video-preview-list');
+        if (!container) return;
         container.innerHTML = videoUrls.map(url => `<div class="video-preview"><span>${url}</span><button type="button" class="delete-btn-icon" data-url="${url}">×</button></div>`).join('');
         document.querySelectorAll('.video-preview .delete-btn-icon').forEach(btn => btn.addEventListener('click', (e) => e.target.parentElement.remove()));
     }
 
-    // NEW: Function to handle adding a video URL
+    function renderVariantInputs(variants) {
+        const container = document.getElementById('variants-container');
+        if (!container) return;
+        container.innerHTML = variants.map(variant => `
+            <div class="variant-group card" style="margin-bottom:1rem;background:var(--bg-color);">
+                <div class="form-group"><label>Feature Name</label><input type="text" class="form-control variant-name-input" value="${variant.name}"></div>
+                <div class="form-group"><label>Options (comma-separated)</label><input type="text" class="form-control variant-options-input" value="${variant.options.join(', ')}"></div>
+                <button type="button" class="btn btn-danger remove-variant-btn">Remove Feature</button>
+            </div>`).join('');
+        document.querySelectorAll('.remove-variant-btn').forEach(btn => btn.addEventListener('click', (e) => e.target.closest('.variant-group').remove()));
+    }
+    
     function handleAddVideo() {
         const input = document.getElementById('video-url-input');
         const url = input.value.trim();
@@ -105,15 +122,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const newPreview = document.createElement('div');
             newPreview.className = 'video-preview';
             newPreview.innerHTML = `<span>${url}</span><button type="button" class="delete-btn-icon" data-url="${url}">×</button>`;
-            container.appendChild(newPreview);
             newPreview.querySelector('.delete-btn-icon').addEventListener('click', (e) => e.target.parentElement.remove());
-            input.value = ''; // Clear input
+            container.appendChild(newPreview);
+            input.value = '';
         } else {
             alert('Please enter a valid YouTube Embed URL (must contain "youtube.com/embed/").');
         }
     }
 
-    function handleDeleteProduct(e) { /* ... same as before ... */
+    function handleAddVariantType() {
+        const nameInput = document.getElementById('new-variant-name');
+        const variantName = nameInput.value.trim();
+        if (!variantName) return alert('Please enter a feature name.');
+        const container = document.getElementById('variants-container');
+        const newGroup = document.createElement('div');
+        newGroup.className = 'variant-group card';
+        newGroup.style.cssText = 'margin-bottom:1rem;background:var(--bg-color);';
+        newGroup.innerHTML = `<div class="form-group"><label>Feature Name</label><input type="text" class="form-control variant-name-input" value="${variantName}"></div><div class="form-group"><label>Options (comma-separated)</label><input type="text" class="form-control variant-options-input" value=""></div><button type="button" class="btn btn-danger remove-variant-btn">Remove Feature</button>`;
+        newGroup.querySelector('.remove-variant-btn').addEventListener('click', (e) => e.target.closest('.variant-group').remove());
+        container.appendChild(newGroup);
+        nameInput.value = '';
+    }
+
+    function handleDeleteProduct(e) {
         const productId = e.target.dataset.id;
         if (confirm('Are you sure you want to delete this product?')) {
             productsDataStore = productsDataStore.filter(p => p.id !== productId);
@@ -121,12 +152,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- CORRECTED and COMPLETE handleFormSubmit ---
     function handleFormSubmit(e) {
         e.preventDefault();
         const productId = document.getElementById('product-id').value;
+        
         const remainingImageUrls = Array.from(document.querySelectorAll('.image-preview img')).map(img => img.src);
-        // NEW: Get remaining video URLs
         const remainingVideoUrls = Array.from(document.querySelectorAll('.video-preview span')).map(span => span.textContent);
+        
+        const variantGroups = document.querySelectorAll('.variant-group');
+        const variantsData = Array.from(variantGroups).map(group => {
+            const name = group.querySelector('.variant-name-input').value.trim();
+            const options = group.querySelector('.variant-options-input').value
+                .split(',')
+                .map(opt => opt.trim())
+                .filter(Boolean); // Cleans up options: splits by comma, removes whitespace, and filters out any empty strings.
+            return { name, options };
+        });
 
         const productData = {
             id: productId || `prod_${Date.now()}`,
@@ -136,21 +178,28 @@ document.addEventListener('DOMContentLoaded', () => {
             salePrice: parseFloat(document.getElementById('product-sale-price').value) || null,
             category: document.getElementById('product-category').value,
             images: remainingImageUrls,
-            videoUrls: remainingVideoUrls // NEW: Save video URLs
+            videoUrls: remainingVideoUrls,
+            variants: variantsData
         };
         
         if (productId) {
             const index = productsDataStore.findIndex(p => p.id === productId);
-            productsDataStore[index] = productData;
+            if (index > -1) {
+                productsDataStore[index] = productData;
+            } else {
+                // This case handles if an edit was made on a product that somehow got deleted.
+                productsDataStore.push(productData);
+            }
         } else {
             productsDataStore.push(productData);
         }
         
         renderProductList();
         hideForm();
+        alert('Product saved locally. Remember to "Save & Download" to make changes permanent.');
     }
 
-    async function handleImageUpload(e) { /* ... same as before ... */
+    async function handleImageUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
         const uploadStatus = document.getElementById('upload-status');
@@ -159,24 +208,28 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('file', file);
         formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
         try {
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
-            if (!response.ok) throw new Error('Upload failed');
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            if (!response.ok) throw new Error(`Upload failed with status: ${response.status}`);
             const data = await response.json();
             const container = document.querySelector('#image-previews .image-preview-list');
             const newPreview = document.createElement('div');
             newPreview.className = 'image-preview';
             newPreview.innerHTML = `<img src="${data.secure_url}" alt="Preview"><button type="button" class="delete-btn-icon" data-url="${data.secure_url}">×</button>`;
-            container.appendChild(newPreview);
             newPreview.querySelector('.delete-btn-icon').addEventListener('click', (e) => e.target.parentElement.remove());
+            container.appendChild(newPreview);
             uploadStatus.textContent = 'Upload successful!';
         } catch (error) {
-            console.error('Upload Error:', error);
-            uploadStatus.textContent = 'Error uploading image.';
+            console.error('Cloudinary Upload Error:', error);
+            uploadStatus.textContent = 'Error uploading image. Check console for details.';
         }
     }
 
-    function saveAndDownloadData() { /* ... same as before ... */
+    function saveAndDownloadData() {
         if (!confirm('This will generate a new data.js file. You must replace the old file in your project with this new one. Continue?')) return;
+        // The `null, 2` part makes the JSON nicely formatted and readable in the file.
         const fileContent = `const productsData = ${JSON.stringify(productsDataStore, null, 2)};`;
         const blob = new Blob([fileContent], { type: 'text/javascript' });
         const url = URL.createObjectURL(blob);
@@ -188,4 +241,5 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
+    
 });
