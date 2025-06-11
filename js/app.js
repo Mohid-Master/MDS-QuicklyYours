@@ -392,47 +392,69 @@ function closeVideoModal() {
     // IMPORTANT: Stop the video from playing in the background
     iframe.src = "";
 }
-    const closeModalBtn = document.getElementById('video-modal-close');
-    closeModalBtn.addEventListener('click', closeVideoModal);
+    // const closeModalBtn = document.getElementById('video-modal-close');
+    // closeModalBtn.addEventListener('click', closeVideoModal);
     // closeModalBtn.addEventListener('click', closeAndCleanup);
+// *** FINAL, CORRECTED Checkout Functions ***
 function renderCheckoutPage() {
     const user = ls.get('userInfo');
     if (user) {
-        document.getElementById('user-name').value = user.name || '';
-        document.getElementById('user-phone').value = user.phone || '';
-        document.getElementById('user-address').value = user.address || '';
-        document.getElementById('user-location').value = user.location || '';
+        const nameEl = document.getElementById('user-name');
+        const phoneEl = document.getElementById('user-phone');
+        const addressEl = document.getElementById('user-address');
+        const locationEl = document.getElementById('user-location');
+        if(nameEl) nameEl.value = user.name || '';
+        if(phoneEl) phoneEl.value = user.phone || '';
+        if(addressEl) addressEl.value = user.address || '';
+        if(locationEl) locationEl.value = user.location || '';
     }
-    
+
+    // Attach event listeners safely
     document.getElementById('city-select')?.addEventListener('change', updateCheckoutSummary);
     document.querySelectorAll('.payment-option').forEach(opt => opt.addEventListener('click', () => {
-        document.querySelector('.payment-option.selected').classList.remove('selected');
+        document.querySelector('.payment-option.selected')?.classList.remove('selected');
         opt.classList.add('selected');
         updateCheckoutSummary();
     }));
     document.getElementById('checkout-form')?.addEventListener('submit', handlePlaceOrder);
     document.getElementById('get-location-btn')?.addEventListener('click', getUserLocationWithCity);
 
-    updateCheckoutSummary();
+    updateCheckoutSummary(); // Initial render of summary
 }
 
 function updateCheckoutSummary() {
     const container = document.getElementById('checkout-container');
+    if (!container) return; // Defensive check
+    
     const cart = getCart();
+    const listContainer = document.getElementById('order-items-list');
+
     if (cart.length === 0) {
-        container.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;"><h2>Your cart is empty.</h2><a href="index.html" class="btn">Continue Shopping</a></div>`;
+        container.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;"><h2>Your cart is empty.</h2><a href="index.html" class="btn" style="margin-top:1rem;">Continue Shopping</a></div>`;
         return;
     }
     
-    document.getElementById('order-items-list').innerHTML = cart.map(item => {
+    let subtotal = 0;
+
+    // *** THE BUG FIX for `salePrice` error ***
+    listContainer.innerHTML = cart.map(item => {
+        // Find the full product details from our main data source
         const product = productsData.find(p => p.id === item.productId);
-        return `<div class="summary-row"><span>${item.name} (x${item.quantity})</span><span>${formatPrice((product.salePrice || product.price) * item.quantity)}</span></div>`;
+        
+        // GRACEFUL HANDLING: If a product in the cart was deleted from data.js, skip it.
+        if (!product) {
+            return ''; // Return an empty string, effectively removing it from the display
+        }
+        
+        const price = product.salePrice || product.price;
+        subtotal += price * item.quantity;
+        return `<div class="summary-row"><span>${item.name} (x${item.quantity})</span><span>${formatPrice(price * item.quantity)}</span></div>`;
     }).join('');
 
-    const subtotal = cart.reduce((sum, item) => sum + (productsData.find(p => p.id === item.productId).salePrice || productsData.find(p => p.id === item.productId).price) * item.quantity, 0);
-    const city = document.getElementById('city-select').value;
+    const city = document.getElementById('city-select')?.value;
     const deliveryCharge = city ? DELIVERY_CHARGES[city] : 0;
-    const paymentMethod = document.querySelector('.payment-option.selected').dataset.payment;
+    const paymentMethodEl = document.querySelector('.payment-option.selected');
+    const paymentMethod = paymentMethodEl ? paymentMethodEl.dataset.payment : 'cod';
     const discount = (paymentMethod === 'advance') ? subtotal * ADVANCE_PAYMENT_DISCOUNT : 0;
     
     document.getElementById('subtotal-price').textContent = formatPrice(subtotal);
@@ -441,6 +463,7 @@ function updateCheckoutSummary() {
     document.getElementById('discount-amount').textContent = `- ${formatPrice(discount)}`;
     document.getElementById('total-price').textContent = formatPrice(subtotal + deliveryCharge - discount);
 }
+
 
 function handlePlaceOrder(e) {
     e.preventDefault();
