@@ -5,27 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details | MDS QuicklyYours</title>
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Internal CSS for Product Page Specifics -->
+        <!-- 2. SEO Meta Tags -->
+    <!-- The Description is your "ad" in Google search results. Make it compelling. -->
+    <meta name="description" content="Explore MDS QuicklyYours for a curated selection of high-quality gadgets, wellness products, and home essentials. Enjoy fast, reliable delivery across Pakistan. Shop now!">
+    <!-- Keywords are less important now, but don't hurt. -->
+    <meta name="keywords" content="e-commerce pakistan, online shopping, dropshipping, gadgets, wellness products, home essentials, mds quicklyyours">
+    <meta name="author" content="MDS QuicklyYours">
+
+    <!-- 3. Open Graph Tags for Social Media (WhatsApp, Facebook, etc.) -->
+    <!-- This controls how your link looks when shared. -->
+    <meta property="og:title" content="MDS QuicklyYours - Quality Products, Delivered Fast" />
+    <meta property="og:description" content="Explore a curated selection of high-quality products with fast delivery across Pakistan." />
+    <!-- IMPORTANT: Create a dedicated 1200x630px image for sharing. -->
+    <meta property="og:image" content="https://mohids-dropshipping-store.netlify.app/assets/og-image.png" />
+    <meta property="og:url" content="https://mohids-dropshipping-store.netlify.app/" /> <!-- Your final live URL -->
+    <meta property="og:type" content="website" />
+
+    <!-- 4. Favicon and Manifest Code -->
+    <!-- PASTE THE CODE FROM realfavicongenerator.net HERE. It will look similar to this: -->
+    <link rel="icon" type="image/png" href="https://mds-quicklyyour.netlify.app/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="https://mds-quicklyyour.netlify.app/favicon.svg" />
+<link rel="shortcut icon" href="https://mds-quicklyyour.netlify.app/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="https://mds-quicklyyour.netlify.app/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="MDS QuicklyYours" />
+<link rel="manifest" href="https://mds-quicklyyour.netlify.app/site.webmanifest" />
+
+    <!-- 5. Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8XMEMC219Q"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-8XMEMC219Q');
+    </script>
+    <!-- Single, Consolidated, and Final Internal Styles for Product Page -->
     <style>
+        /* --- Base Product Page Layout --- */
         .product-page-layout {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            /* A responsive grid: 1 column on small screens, 2 on larger screens */
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1.2fr));
             gap: 3rem;
             align-items: flex-start;
-            padding: 2rem 0;
         }
-        .product-gallery { display: flex; flex-direction: column; gap: 1rem; }
+
+        /* --- Image Gallery --- */
+        .product-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative; /* Makes the gallery stick on screen while scrolling on desktop */
+            /* top: 120px; */
+        }
         .main-image-container {
             border-radius: var(--border-radius);
             overflow: hidden;
             box-shadow: var(--shadow);
             position: relative;
         }
-        .main-image-container img { width: 100%; height: auto; aspect-ratio: 1/1; object-fit: cover; }
+        .main-image-container img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .main-image-container:hover img {
+            transform: scale(1.03);
+        }
         .thumbnail-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            /* Creates a flexible grid for thumbnails */
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
             gap: 1rem;
         }
         .thumbnail {
@@ -34,68 +85,201 @@
             cursor: pointer;
             overflow: hidden;
             transition: var(--transition);
-            position: relative;
-            aspect-ratio: 1/1;
+            aspect-ratio: 1 / 1;
+            position: relative; /* For play icon */
         }
-        .thumbnail:hover, .thumbnail.active { border-color: var(--primary-color); }
-        .thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+        .thumbnail:hover, .thumbnail.active {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px hsla(var(--hue), 81%, 30%, 0.3);
+        }
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
         .thumbnail.video-thumbnail {
             background-color: var(--dark-color);
-            display: flex; justify-content: center; align-items: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .thumbnail .play-icon { font-size: 2.5rem; color: #fff; opacity: 0.8; pointer-events: none; }
-        .product-info h1 { font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.2; }
-        .product-info .price { font-size: 2rem; color: var(--primary-color); font-weight: 700; margin-bottom: 1rem; }
-        .product-info .description { margin-bottom: 1.5rem; }
-        .quantity-control { display: flex; align-items: center; gap: 1rem; margin: 2rem 0; }
-        .quantity-control label { font-weight: 600; font-size: 1.1rem; }
-        .quantity-control .form-control { width: 80px; text-align: center; font-size: 1.2rem; }
+        .thumbnail .play-icon {
+            font-size: 2.5rem;
+            color: #fff;
+            opacity: 0.8;
+            pointer-events: none;
+        }
         
-        .related-products { padding: 4rem 0; background-color: var(--light-color); }
-        .related-products .section-title { text-align: center; margin-bottom: 3rem; }
+        /* --- Product Info Column --- */
+        .product-info h1 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            line-height: 1.2;
+            color: var(--dark-color);
+        }
+        .product-info .price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 1rem 0;
+        }
+        .product-info .price .original-price {
+            font-size: 1.2rem;
+            color: var(--text-muted-color);
+            text-decoration: line-through;
+            margin-left: 0.75rem;
+        }
+        .product-info .description {
+            line-height: 1.8;
+            color: var(--text-color);
+        }
+
+        /* --- FINAL: Variant Selection Styles --- */
+        .variants-container {
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .variant-group {}
+        .variant-group label {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            display: block;
+            color: var(--dark-color);
+        }
+        .variant-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .variant-btn {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            user-select: none; /* Prevents text selection on click */
+        }
+        .variant-btn:hover {
+            background-color: var(--light-color);
+            border-color: var(--secondary-color);
+        }
+        .variant-btn.selected {
+            background-color: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+            font-weight: 600;
+            box-shadow: 0 2px 8px hsla(var(--hue), 81%, 30%, 0.4);
+        }
+
+        /* --- Quantity & Add to Cart --- */
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .quantity-control label {
+            font-weight: 600;
+        }
+        .quantity-control .form-control {
+            width: 80px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        #add-to-cart-btn {
+            width: 100%;
+            font-size: 1.1rem;
+            padding: 1rem;
+        }
         
-        /* Video Modal Styles */
+        /* --- Related Products Section --- */
+        .related-products {
+            padding-top: 4rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .related-products .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 3rem;
+        }
+        
+        /* --- Video Modal Styles --- */
         .video-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center;
-            z-index: 3000; opacity: 0; transition: opacity 0.3s ease;
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-        .video-modal-overlay.visible { display: flex; opacity: 1; }
-        .video-modal-content { position: relative; width: 90%; max-width: 900px; aspect-ratio: 16/9; }
-        .video-modal-content iframe { width: 100%; height: 100%; border: none; border-radius: var(--border-radius); }
+        .video-modal-overlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+        .video-modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            aspect-ratio: 16 / 9;
+        }
+        .video-modal-content iframe {
+            width: 100%; height: 100%;
+            border: none;
+            border-radius: var(--border-radius);
+        }
         .video-modal-close {
-            position: absolute; top: -40px; right: 0;
-            font-size: 2.5rem; color: #fff; cursor: pointer; background: transparent; border: none;
+            position: absolute;
+            top: -40px; right: 0;
+            font-size: 2.5rem;
+            color: #fff;
+            cursor: pointer;
+            background: transparent;
+            border: none;
         }
-        
-        @media (max-width: 992px) { .product-page-layout { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <header class="main-header">
         <div class="container">
-            <a href="index.html" class="logo">Mohid's Store</a>
+            <a href="index.html" class="logo">MDS QuicklyYours</a>
             <div class="nav-controls">
                 <div id="user-auth-section">
-                    <button class="login-btn" id="login-btn"><i class='bx bx-user'></i></button>
+                    <!-- User info/login button loaded by JS -->
                 </div>
-                <button class="cart-btn" id="cart-btn">
+                <button class="cart-btn" id="cart-btn" title="View Cart">
                     <i class='bx bx-cart'></i>
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
-                <button class="theme-toggle" id="theme-toggle"><i class='bx bx-moon'></i></button>
+                <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
+                    <i class='bx bx-moon'></i>
+                </button>
             </div>
         </div>
     </header>
 
     <main>
         <div class="container" id="product-detail-container">
-            <!-- Product Details Loaded by JavaScript -->
+            <!-- Product Details will be rendered here by JavaScript -->
         </div>
         <section class="related-products" id="related-products-container">
-            <!-- Related Products Loaded by JavaScript -->
+            <!-- Related Products will be rendered here by JavaScript -->
         </section>
     </main>
 
@@ -109,18 +293,18 @@
         </div>
     </aside>
 
-
-    <!-- Video Modal Structure (NEW) -->
+    <!-- Video Modal -->
     <div class="video-modal-overlay" id="video-modal">
         <div class="video-modal-content">
             <button class="video-modal-close" id="video-modal-close">×</button>
-            <iframe id="video-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+           <!-- In product.html, replace the old iframe with this one -->
+<iframe id="video-iframe" src="" title="Product Video Player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
         </div>
     </div>
 
     <footer class="main-footer">
         <div class="container">
-             <p>© 2024 Mohid's Store. All Rights Reserved.</p>
+             <p>© 2024 MDS QuicklyYours. All Rights Reserved.</p>
         </div>
     </footer>
 
