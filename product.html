@@ -293,14 +293,20 @@
         </div>
     </aside>
 
-    <!-- Video Modal -->
-    <div class="video-modal-overlay" id="video-modal">
-        <div class="video-modal-content">
-            <button class="video-modal-close" id="video-modal-close">×</button>
-           <!-- In product.html, replace the old iframe with this one -->
-<iframe id="video-iframe" src="" title="Product Video Player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-        </div>
+   <!-- In product.html, make sure this section is present, ideally right before the </body> tag -->
+
+<!-- Video Modal -->
+<div class="video-modal-overlay" id="video-modal" onclick="closeVideoModal()">
+    <div class="video-modal-content">
+        <!-- The stopPropagation() prevents the overlay click from firing when clicking the video itself -->
+        <iframe id="video-iframe" src="" title="Product Video Player" frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen onclick="event.stopPropagation()"></iframe>
+        
+        <!-- The close button also calls the same simple function -->
+        <button class="video-modal-close" id="video-modal-close" onclick="closeVideoModal()">×</button>
     </div>
+</div>
 
     <footer class="main-footer">
         <div class="container">
