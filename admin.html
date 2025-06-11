@@ -4,7 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | Mohid's Store</title>
-    
+        <meta property="og:title" content="MDS QuicklyYours - Quality Products, Delivered Fast" />
+    <meta property="og:description" content="Explore a curated selection of high-quality products with fast delivery across Pakistan." />
+    <!-- IMPORTANT: Create a dedicated 1200x630px image for sharing. -->
+    <meta property="og:image" content="https://mohids-dropshipping-store.netlify.app/assets/og-image.png" />
+    <meta property="og:url" content="https://mohids-dropshipping-store.netlify.app/" /> <!-- Your final live URL -->
+    <meta property="og:type" content="website" />
+
+    <!-- 4. Favicon and Manifest Code -->
+    <!-- PASTE THE CODE FROM realfavicongenerator.net HERE. It will look similar to this: -->
+    <link rel="icon" type="image/png" href="https://mds-quicklyyour.netlify.app/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="https://mds-quicklyyour.netlify.app/favicon.svg" />
+<link rel="shortcut icon" href="https://mds-quicklyyour.netlify.app/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="https://mds-quicklyyour.netlify.app/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="MDS QuicklyYours" />
+<link rel="manifest" href="https://mds-quicklyyour.netlify.app/site.webmanifest" />
+
     <style>
         /* --- Google Font & CSS Variables --- */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
@@ -111,6 +126,18 @@
                 <div class="form-group"><label>Images</label><div id="image-previews" class="preview-container"><div class="image-preview-list"></div></div></div>
                 <div class="form-group"><label for="image-upload">Upload New Image</label><input type="file" id="image-upload" accept="image/*" class="form-control"><small id="upload-status" style="display:block; margin-top:0.5rem; color: var(--text-muted-color);"></small></div>
 
+                <!-- Add this section inside the <form id="product-form"> in admin.html -->
+
+<hr style="margin: 2rem 0;">
+<h4 style="margin-bottom: 1rem;">Product Variants (e.g., Size, Color)</h4>
+<div id="variants-container">
+    <!-- Variants will be rendered here by JS -->
+</div>
+<div style="display:flex; gap: 10px; margin-top: 1rem;">
+    <input type="text" id="new-variant-name" class="form-control" placeholder="New Feature Name (e.g., Color)">
+    <button type="button" id="add-variant-btn" class="btn btn-secondary">Add Feature</button>
+</div>
+                
                 <!-- VIDEO SECTION (NEW) -->
                 <div class="form-group"><label>Video URLs</label><div id="video-previews" class="preview-container"><div class="video-preview-list"></div></div></div>
                 <div class="form-group">
