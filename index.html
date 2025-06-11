@@ -1,4 +1,6 @@
-  <head>
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -81,13 +83,29 @@
         </section>
 
         <!-- DYNAMIC Product Grid Section -->
-        <section class="products-section" id="products">
-            <div class="container">
-                <h2 class="section-title">Our Products</h2>
-                <!-- This div is intentionally empty. app.js will fill it with products. -->
-                <div class="product-grid" id="product-grid"></div>
+<!-- Inside index.html, replace the #products section -->
+<section class="products-section" id="products">
+    <div class="container">
+        <h2 class="section-title">Our Products</h2>
+
+        <!-- NEW: Search & Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <input type="text" id="search-input" placeholder="Search by product name...">
             </div>
-        </section>
+            <div class="filter-group">
+                <select id="category-filter">
+                    <option value="all">All Categories</option>
+                    <!-- Categories will be populated by JS -->
+                </select>
+            </div>
+        </div>
+
+        <div class="product-grid" id="product-grid">
+            <!-- Products will be loaded here by JavaScript -->
+        </div>
+    </div>
+</section>
 
         <!-- MERGED About Section -->
         <section class="about-section" id="about">
