@@ -1,17 +1,9 @@
-// js/app.js (Final, Robust, and Complete Version)
+// js/app.js (Final, Bug-Free Version with Event Delegation and Correct Video Logic)
 
-// --- Constants ---
-const DELIVERY_CHARGES = {
-    karachi: 300,
-    other: 500
-};
-const ADVANCE_PAYMENT_DISCOUNT = 0.01; // 1%
-
-// --- Global State ---
-let currentFilters = {
-    searchTerm: '',
-    category: 'all'
-};
+// --- Constants & Global State ---
+const DELIVERY_CHARGES = { karachi: 300, other: 500 };
+const ADVANCE_PAYMENT_DISCOUNT = 0.01;
+let currentFilters = { searchTerm: '', category: 'all' };
 
 // --- Main Initializer ---
 document.addEventListener('DOMContentLoaded', main);
@@ -19,14 +11,12 @@ document.addEventListener('DOMContentLoaded', main);
 function main() {
     // Global initializations that are safe for all pages
     initTheme();
-
-    // Page-specific routing
     const path = window.location.pathname;
 
     // Run these inits on pages that have the main header and sidebar
     if (path.endsWith('/') || path.endsWith('index.html') || path.includes('product.html')) {
         initLoginSystem();
-        initCartSidebar();
+        initCartSidebar(); // This function will now set up the SINGLE event listener
         initBackToTop();
     }
     
@@ -43,37 +33,19 @@ function main() {
 
 // ===================================================================
 // --- LOCALSTORAGE & HELPERS ---
-// ===================================================================
-const ls = {
-    get: (key) => {
-        try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
-    },
-    set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
-    remove: (key) => localStorage.removeItem(key)
-};
-
-const formatPrice = (price) => `Rs ${Math.round(price).toLocaleString()}`;
-
-function openModal(id) {
-    document.getElementById(id)?.classList.add('open');
-}
-
-function closeModal(id) {
-    document.getElementById(id)?.classList.remove('open');
-}
+const ls = { get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set: (k,v) => localStorage.setItem(k, JSON.stringify(v)), remove: (k) => localStorage.removeItem(k) };
+const formatPrice = (p) => `Rs ${Math.round(p).toLocaleString()}`;
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
 
 // ===================================================================
 // --- GLOBAL UI INITIALIZERS ---
-// ===================================================================
 function initTheme() {
     const themeToggle = document.getElementById('theme-toggle');
-    if (!themeToggle) return; // Makes this function safe to call on any page
-
+    if (!themeToggle) return;
     const storedTheme = ls.get('theme') || 'light';
     document.documentElement.setAttribute('data-theme', storedTheme);
-    
     themeToggle.innerHTML = storedTheme === 'dark' ? "<i class='bx bx-sun'></i>" : "<i class='bx bx-moon'></i>";
-    
     themeToggle.addEventListener('click', () => {
         const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', newTheme);
@@ -88,20 +60,13 @@ function initBackToTop() {
 }
 
 // ===================================================================
-// --- LOGIN & USER MANAGEMENT (with Geocoding) ---
-// ===================================================================
+// --- LOGIN & USER MANAGEMENT ---
 function initLoginSystem() {
     const authSection = document.getElementById('user-auth-section');
     if (!authSection) return;
-    
     const user = ls.get('userInfo');
-    authSection.innerHTML = (user && user.name) 
-        ? `<span id="user-greeting" style="cursor:pointer;">Hi, ${user.name.split(' ')[0]}</span>`
-        : `<button class="login-btn" id="login-btn" title="Login"><i class='bx bx-user'></i></button>`;
-    
-    // Allow logged-in user to click their name to open the modal and edit info
+    authSection.innerHTML = (user && user.name) ? `<span id="user-greeting" style="cursor:pointer;">Hi, ${user.name.split(' ')[0]}</span>` : `<button class="login-btn" id="login-btn" title="Login"><i class='bx bx-user'></i></button>`;
     authSection.addEventListener('click', () => openModal('login-modal-overlay'));
-    
     document.getElementById('close-modal-btn')?.addEventListener('click', () => closeModal('login-modal-overlay'));
     document.getElementById('user-info-form')?.addEventListener('submit', saveUserInfo);
     document.getElementById('get-location-btn')?.addEventListener('click', getUserLocationWithCity);
@@ -109,39 +74,30 @@ function initLoginSystem() {
 
 function saveUserInfo(e) {
     e.preventDefault();
-    ls.set('userInfo', {
-        name: document.getElementById('user-name').value,
-        phone: document.getElementById('user-phone').value,
-        location: document.getElementById('user-location').value
-    });
+    ls.set('userInfo', { name: document.getElementById('user-name').value, phone: document.getElementById('user-phone').value, location: document.getElementById('user-location').value });
     alert('Information saved!');
     closeModal('login-modal-overlay');
-    initLoginSystem(); // Re-render header to show greeting
+    initLoginSystem();
 }
 
 async function getUserLocationWithCity(event) {
     const btn = event.target;
     const form = btn.closest('form');
     const locationInput = form.querySelector('#user-location');
-    
-    if (!navigator.geolocation) return alert('Geolocation is not supported by this browser.');
-
+    if (!navigator.geolocation) return alert('Geolocation is not supported.');
     btn.textContent = "Locating...";
     btn.disabled = true;
-
     try {
-        const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 }));
+        const position = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { timeout: 10000 }));
         const { latitude, longitude } = position.coords;
         locationInput.value = `https://www.google.com/maps?q=${latitude},${longitude}`;
-        
         btn.textContent = "Finding City...";
         const geoResponse = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
         const geoData = await geoResponse.json();
-        
         const citySelect = document.getElementById('city-select');
-        if (citySelect) { // This will only exist on the checkout page
+        if (citySelect) {
             citySelect.value = (geoData.city?.toLowerCase() === 'karachi') ? 'karachi' : 'other';
-            citySelect.dispatchEvent(new Event('change')); // Trigger summary update
+            citySelect.dispatchEvent(new Event('change'));
         }
         btn.textContent = `Found (${geoData.city || 'OK'})`;
     } catch (error) {
@@ -153,14 +109,34 @@ async function getUserLocationWithCity(event) {
 }
 
 // ===================================================================
-// --- CART MANAGEMENT (WITH VARIANT SUPPORT) ---
+// --- CART MANAGEMENT (REWRITTEN WITH EVENT DELEGATION) ---
 // ===================================================================
 function initCartSidebar() {
     renderCartSidebar();
     document.getElementById('cart-btn')?.addEventListener('click', () => openModal('cart-sidebar'));
     document.getElementById('close-cart-btn')?.addEventListener('click', () => closeModal('cart-sidebar'));
     const checkoutBtn = document.querySelector('.cart-footer a');
-    if(checkoutBtn) checkoutBtn.href = 'order.html'; // Correct link
+    if (checkoutBtn) checkoutBtn.href = 'order.html';
+
+    // *** THE BUG FIX ***
+    // Add ONE listener to the parent container. This is event delegation.
+    const cartBody = document.getElementById('cart-body');
+    if (cartBody) {
+        cartBody.addEventListener('click', (e) => {
+            // Check if a button inside the cart was clicked
+            const targetButton = e.target.closest('.quantity-btn');
+            if (targetButton) {
+                const id = targetButton.dataset.id;
+                const action = targetButton.dataset.action;
+                const item = getCart().find(i => i.cartId === id);
+                if (!item) return;
+
+                if (action === 'increase') updateCartItemQuantity(id, item.quantity + 1);
+                if (action === 'decrease') updateCartItemQuantity(id, item.quantity - 1);
+                if (action === 'remove') updateCartItemQuantity(id, 0);
+            }
+        });
+    }
 }
 
 function getCart() { return ls.get('cart') || []; }
@@ -196,12 +172,12 @@ function updateCartItemQuantity(cartId, newQuantity) {
     saveCart(cart);
 }
 
+// This function now ONLY renders HTML. It no longer adds event listeners.
 function renderCartSidebar() {
     const cart = getCart();
     const cartBody = document.getElementById('cart-body');
     const cartSubtotalEl = document.getElementById('cart-subtotal');
     const cartCountEl = document.getElementById('cart-count');
-    
     if (!cartBody) return;
 
     if (cart.length === 0) {
@@ -236,21 +212,8 @@ function renderCartSidebar() {
     }).join('');
 
     if(cartSubtotalEl) cartSubtotalEl.textContent = formatPrice(subtotal);
-    
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     if(cartCountEl) { cartCountEl.textContent = totalItems; cartCountEl.classList.add('visible'); }
-    
-    document.querySelectorAll('.quantity-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            const action = btn.dataset.action;
-            const item = getCart().find(i => i.cartId === id);
-            if (!item) return;
-            if (action === 'increase') updateCartItemQuantity(id, item.quantity + 1);
-            if (action === 'decrease') updateCartItemQuantity(id, item.quantity - 1);
-            if (action === 'remove') updateCartItemQuantity(id, 0);
-        });
-    });
 }
 
 // ===================================================================
@@ -323,11 +286,9 @@ function renderHomePage() {
 }
 
 // In js/app.js, replace the existing renderProductPage function with this one.
-
 function renderProductPage() {
     const container = document.getElementById('product-detail-container');
     if (!container) return;
-
     const params = new URLSearchParams(window.location.search);
     const productId = params.get('id');
     const product = productsData.find(p => p.id === productId);
@@ -340,145 +301,100 @@ function renderProductPage() {
     document.title = `${product.name} | MDS QuicklyYours`;
     const priceHTML = product.salePrice ? `<span class="sale-badge">${formatPrice(product.salePrice)}</span> <span class="original-price">${formatPrice(product.price)}</span>` : `<span>${formatPrice(product.price)}</span>`;
     
-    // --- Build HTML Strings ---
-    const imageThumbnailsHTML = product.images.map((img, index) => 
-        `<div class="thumbnail ${index === 0 ? 'active' : ''}" data-image="${img}">
-            <img src="${img}" alt="Thumbnail ${index + 1}">
-         </div>`
-    ).join('');
-
-    const videoThumbnailHTML = (product.videoUrls && product.videoUrls.length > 0) 
-        ? `<!-- In product.html, replace the old iframe with this one -->
-<iframe id="video-iframe" src="" title="Product Video Player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>` 
-        : '';
-
-    const variantsHTML = (product.variants && product.variants.length > 0) ? `
-        <div class="variants-container">
-            ${product.variants.map(variant => `
-                <div class="variant-group">
-                    <label>${variant.name}:</label>
-                    <div class="variant-options">
-                        ${variant.options.map((opt, index) => 
-                            `<button class="variant-btn ${index === 0 ? 'selected' : ''}" data-option-value="${opt}">${opt}</button>`
-                        ).join('')}
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    ` : '';
+    const imageThumbnailsHTML = product.images.map((img, index) => `<div class="thumbnail ${index === 0 ? 'active' : ''}" data-image="${img}"><img src="${img}" alt="Thumbnail"></div>`).join('');
     
-    // --- Render the Full HTML Structure ---
+    // *** THE VIDEO BUG FIX ***
+    // Only render the video thumbnail icon, NOT the iframe itself.
+    const videoThumbnailHTML = (product.videoUrls && product.videoUrls.length > 0) ? `<div class="thumbnail video-thumbnail" id="video-thumbnail"><i class='bx bx-play play-icon'></i></div>` : '';
+    
+    const variantsHTML = (product.variants && product.variants.length > 0) ? `
+        <div class="variants-container">${product.variants.map(variant => `
+            <div class="variant-group"><label>${variant.name}:</label><div class="variant-options">
+                ${variant.options.map((opt, index) => `<button class="variant-btn ${index === 0 ? 'selected' : ''}" data-option-value="${opt}">${opt}</button>`).join('')}
+            </div></div>`).join('')}
+        </div>` : '';
+    
     container.innerHTML = `
         <div class="product-page-layout">
             <div class="product-gallery">
                 <div class="main-image-container"><img src="${product.images[0]}" id="main-product-image" alt="${product.name}"></div>
-                <div class="thumbnail-container" id="product-thumbnails">${imageThumbnailsHTML}${videoThumbnailHTML}</div>
+                <div class="thumbnail-container">${imageThumbnailsHTML}${videoThumbnailHTML}</div>
             </div>
             <div class="product-info">
-                <h1>${product.name}</h1>
-                <p class="price">${priceHTML}</p>
-                <p class="description">${product.description}</p>
+                <h1>${product.name}</h1><p class="price">${priceHTML}</p><p class="description">${product.description}</p>
                 ${variantsHTML}
-                <div class="quantity-control">
-                    <label for="quantity">Quantity:</label>
-                    <input type="number" id="quantity" value="1" min="1" max="50" class="form-control" style="width:80px;">
-                </div>
+                <div class="quantity-control"><label for="quantity">Quantity:</label><input type="number" id="quantity" value="1" min="1" max="50" class="form-control" style="width:80px;"></div>
                 <button class="btn" id="add-to-cart-btn" style="width:100%;">Add to Cart</button>
             </div>
-        </div>
-    `;
+        </div>`;
 
-    // =============================================================
-    // --- ACTIVATE ALL EVENT LISTENERS for the rendered content ---
-    // =============================================================
-
-    // 1. Image Gallery Thumbnail Clicks (This was the missing part)
+    // --- ACTIVATE ALL EVENT LISTENERS ---
     const mainImage = document.getElementById('main-product-image');
     document.querySelectorAll('.thumbnail:not(.video-thumbnail)').forEach(thumb => {
         thumb.addEventListener('click', () => {
-            // Get the new image source from the clicked thumbnail
-            const newImageSrc = thumb.dataset.image;
-            // Update the main image
-            mainImage.src = newImageSrc;
-            
-            // Update the 'active' class on all thumbnails
+            mainImage.src = thumb.dataset.image;
             document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
             thumb.classList.add('active');
         });
     });
-
-    // 2. Video Modal Logic
-// 2. Video Modal Logic (REVISED AND CORRECTED)
-const videoThumbnail = document.getElementById('video-thumbnail');
-if (videoThumbnail) {
-    videoThumbnail.addEventListener('click', () => {
-        // Only proceed if the product actually has a video URL
+     // 2. Video Thumbnail Click - THIS IS THE KEY
+    document.getElementById('video-thumbnail')?.addEventListener('click', () => {
         if (product.videoUrls && product.videoUrls.length > 0) {
-            // Pass the URL to a dedicated function to open the modal
+            // Call the simple function to open the modal
             openVideoModal(product.videoUrls[0]);
         }
     });
-}
-    // Add these new functions inside js/app.js, near openModal and closeModal
-function openVideoModal(videoUrl) {
-    const modal = document.getElementById('video-modal');
-    const iframe = document.getElementById('video-iframe');
+    // document.getElementById('video-thumbnail')?.addEventListener('click', () => {
+    //     if (product.videoUrls && product.videoUrls.length > 0) openVideoModal(product.videoUrls[0]);
+    // });
     
-    if (modal && iframe) {
-        // Set the src for the YouTube embed. The '?autoplay=1' is crucial.
-        iframe.src = `${videoUrl}?autoplay=1&rel=0`; 
-        modal.classList.add('visible');
-        
-        // Attach closing listeners ONLY when the modal is opened
-        const closeModalBtn = document.getElementById('video-modal-close');
-        
-        // Define a function to close and clean up
-        const closeAndCleanup = () => {
-            modal.classList.remove('visible');
-            iframe.src = ""; // IMPORTANT: This stops the video and resets the iframe
-            modal.removeEventListener('click', overlayClickHandler); // Clean up listener
-        };
+    document.querySelectorAll('.variant-btn').forEach(btn => btn.addEventListener('click', () => {
+        btn.parentElement.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }));
 
-        const overlayClickHandler = (e) => {
-            if (e.target === modal) {
-                closeAndCleanup();
-            }
-        };
-        
-        closeModalBtn.onclick = closeAndCleanup;
-        modal.addEventListener('click', overlayClickHandler);
-    }
-}
-
-        // 3. Variant Button Clicks
-    document.querySelectorAll('.variant-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            // In the same group, deselect other buttons
-            btn.parentElement.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
-            // Select the clicked one
-            btn.classList.add('selected');
-        });
-    });
-
-    // 4. "Add to Cart" Button Click
     document.getElementById('add-to-cart-btn')?.addEventListener('click', () => {
-        const selectedOptions = Array.from(document.querySelectorAll('.variant-btn.selected'))
-            .map(btn => btn.dataset.optionValue);
-
-        const cartItem = {
+        const selectedOptions = Array.from(document.querySelectorAll('.variant-btn.selected')).map(btn => btn.dataset.optionValue);
+        addToCart({
             cartId: `${product.id}_${selectedOptions.join('_')}`.replace(/\s+/g, '-'),
             productId: product.id,
             name: selectedOptions.length > 0 ? `${product.name} (${selectedOptions.join(', ')})` : product.name,
             quantity: parseInt(document.getElementById('quantity').value, 10)
-        };
-        
-        addToCart(cartItem);
+        });
     });
 
-    // 5. Render Related Products
     renderRelatedProducts(product.category, product.id);
 }
 
+// In js/app.js, replace the existing openVideoModal function with this one.
+// ===================================================================
+// --- NEW, SIMPLIFIED VIDEO MODAL LOGIC ---
+// ===================================================================
+
+function openVideoModal(videoUrl) {
+    const modal = document.getElementById('video-modal');
+    const iframe = document.getElementById('video-iframe');
+    if (!modal || !iframe) return;
+
+    // Set the video source and make it autoplay
+    iframe.src = `${videoUrl}?autoplay=1&rel=0`;
+    // Make the modal visible
+    modal.classList.add('visible');
+}
+
+function closeVideoModal() {
+    const modal = document.getElementById('video-modal');
+    const iframe = document.getElementById('video-iframe');
+    if (!modal || !iframe) return;
+
+    // Hide the modal
+    modal.classList.remove('visible');
+    // IMPORTANT: Stop the video from playing in the background
+    iframe.src = "";
+}
+    const closeModalBtn = document.getElementById('video-modal-close');
+    closeModalBtn.addEventListener('click', closeVideoModal);
+    // closeModalBtn.addEventListener('click', closeAndCleanup);
 function renderCheckoutPage() {
     const user = ls.get('userInfo');
     if (user) {
