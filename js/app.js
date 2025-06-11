@@ -180,10 +180,20 @@ function renderCartSidebar() {
     const cartCountEl = document.getElementById('cart-count');
     if (!cartBody) return;
 
+    // Filter out ghost items (products no longer exist)
+    const cleanCart = cart.filter(item => productsData.find(p => p.id === item.productId));
+    if (cleanCart.length !== cart.length) {
+        saveCart(cleanCart); // This will re-render, so return early
+        return;
+    }
+
     if (cart.length === 0) {
         cartBody.innerHTML = '<p class="cart-empty-msg">Your cart is empty.</p>';
         if(cartSubtotalEl) cartSubtotalEl.textContent = formatPrice(0);
-        if(cartCountEl) { cartCountEl.textContent = 0; cartCountEl.classList.remove('visible'); }
+        if(cartCountEl) {
+            cartCountEl.textContent = 0;
+            cartCountEl.classList.remove('visible');
+        }
         return;
     }
 
@@ -213,9 +223,15 @@ function renderCartSidebar() {
 
     if(cartSubtotalEl) cartSubtotalEl.textContent = formatPrice(subtotal);
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    if(cartCountEl) { cartCountEl.textContent = totalItems; cartCountEl.classList.add('visible'); }
+    if(cartCountEl) {
+        cartCountEl.textContent = totalItems;
+        if (totalItems > 0) {
+            cartCountEl.classList.add('visible');
+        } else {
+            cartCountEl.classList.remove('visible');
+        }
+    }
 }
-
 // ===================================================================
 // --- SEARCH & FILTER LOGIC ---
 // ===================================================================
@@ -397,6 +413,25 @@ function closeVideoModal() {
     // closeModalBtn.addEventListener('click', closeAndCleanup);
 // *** FINAL, CORRECTED Checkout Functions ***
 function renderCheckoutPage() {
+    const cart = getCart().filter(item => productsData.find(p => p.id === item.productId)); // Clean cart
+
+    // GUARD CLAUSE: If cart is empty, show message and stop further logic
+    if (cart.length === 0) {
+        const container = document.getElementById('checkout-container');
+        if (container) {
+            container.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;">
+                <h2>Your cart is empty.</h2>
+                <a href="index.html" class="btn" style="margin-top:1rem;">Continue Shopping</a>
+            </div>`;
+        }
+        return;
+    }
+
+    // If ghost items were present, clean the cart
+    if (cart.length !== getCart().length) {
+        saveCart(cart);
+    }
+
     const user = ls.get('userInfo');
     if (user) {
         const nameEl = document.getElementById('user-name');
@@ -421,7 +456,6 @@ function renderCheckoutPage() {
 
     updateCheckoutSummary(); // Initial render of summary
 }
-
 function updateCheckoutSummary() {
     const container = document.getElementById('checkout-container');
     if (!container) return; // Defensive check
@@ -467,6 +501,18 @@ function updateCheckoutSummary() {
 
 function handlePlaceOrder(e) {
     e.preventDefault();
+
+    // Filter out ghost items
+    let cart = getCart().filter(item => productsData.find(p => p.id === item.productId));
+    if (cart.length === 0) {
+        alert('Your cart is empty. Please add some products to your cart before placing an order.');
+        window.location.href = 'index.html';
+        return;
+    }
+    if (cart.length !== getCart().length) {
+        saveCart(cart);
+    }
+
     const customer = {
         name: document.getElementById('user-name').value,
         phone: document.getElementById('user-phone').value,
@@ -474,26 +520,37 @@ function handlePlaceOrder(e) {
         location: document.getElementById('user-location').value,
         city: document.getElementById('city-select').value
     };
-    
+
     if (!customer.location) return alert('GPS Location is required. Please click the "Get" button.');
     if (!customer.city) return alert('Please select your city.');
 
-    const cart = getCart();
-    const subtotal = cart.reduce((sum, item) => sum + (productsData.find(p => p.id === item.productId).salePrice || productsData.find(p => p.id === item.productId).price) * item.quantity, 0);
+    // Defensive reduce: skip items with missing product
+    let subtotal = 0;
+    cart.forEach(item => {
+        const product = productsData.find(p => p.id === item.productId);
+        if (product) {
+            subtotal += (product.salePrice || product.price) * item.quantity;
+        }
+    });
+
     const deliveryCharge = DELIVERY_CHARGES[customer.city] || 0;
-    const paymentMethod = document.querySelector('.payment-option.selected').dataset.payment;
+    const paymentMethod = document.querySelector('.payment-option.selected')?.dataset.payment || 'cod';
     const discount = (paymentMethod === 'advance') ? subtotal * ADVANCE_PAYMENT_DISCOUNT : 0;
     const total = subtotal + deliveryCharge - discount;
 
     const orderDetails = cart.map(item => `*${item.name}* (Qty: ${item.quantity})`).join('\n');
 
-    const message = `*New Order from MDS QuicklyYours!*\n\n*Customer:* ${customer.name}\n*Phone:* ${customer.phone}\n*Address:* ${customer.address}\n*GPS:* ${customer.location}\n\n--- *Order Summary* ---\n${orderDetails}\n-----------------------------\n*Subtotal:* ${formatPrice(subtotal)}\n*Delivery:* ${formatPrice(deliveryCharge)}\n${discount > 0 ? `*Discount:* -${formatPrice(discount)}\n` : ''}*TOTAL:* *${formatPrice(total)}*\n\n*Payment Method:* ${paymentMethod === 'cod' ? 'Cash on Delivery' : 'Advance Payment'}\n---\nPlease confirm my order. Thank you!`;
-    
+    const message = `*New Order from MDS QuicklyYours!*\n\n*Customer:* ${customer.name}\n*Phone:* ${customer.phone}\n*Address:* ${customer.address}\n*GPS:* ${customer.location}\n\n--- *Order Summary* ---\n${orderDetails}\n\n*Subtotal:* ${formatPrice(subtotal)}\n*Delivery:* ${formatPrice(deliveryCharge)}\n${discount > 0 ? `*Advance Payment Discount:* -${formatPrice(discount)}\n` : ''}*Grand Total:* ${formatPrice(total)}\n\n_Please confirm the details._`;
+
     const whatsappURL = `https://wa.me/923211217548?text=${encodeURIComponent(message.trim())}`;
     window.open(whatsappURL, '_blank');
-    
+
     ls.remove('cart');
-    document.getElementById('checkout-container').innerHTML = `<div class="card" style="grid-column: 1 / -1; text-align: center;"><h2>Thank You!</h2><p>Your order details have been prepared. Please send the message in WhatsApp to finalize your order.</p><a href="index.html" class="btn" style="margin-top: 1rem;">Continue Shopping</a></div>`;
+    document.getElementById('checkout-container').innerHTML = `<div class="card" style="grid-column: 1 / -1; text-align: center;">
+        <h2>Thank You!</h2>
+        <p>Your order details have been prepared. Please send the WhatsApp message to complete your order.</p>
+        <a href="index.html" class="btn" style="margin-top:1rem;">Continue Shopping</a>
+    </div>`;
 }
 
 function renderRelatedProducts(category, currentProductId) {
